@@ -12,14 +12,17 @@ Containerize Sitefinity applications on Windows Server 2016 using [Docker](https
 
 1. Clone the repository to your Container Host.
 2. Edit the **dsc/sfwebapp-data.psd1** to provide the path to your Sitefinity site zip archive:
+
 	```json
 	SitefinityWebAppSource = "YourWebsiteArchiveURL"
 	```
 3. If you are using Azure VM then you will have the base container, from which the Sitefinity container will be created predefined. Double check this by running:
+
 	```cmd
 	docker images
 	```
-	This should return a list of available images:
+This should return a list of available images:
+
 	REPOSITORY | TAG | IMAGE ID | CREATED | VIRTUAL SIZE
 	----------------|------|-------------|-------------|-----------------
 	windowsservercore | latest | 6801d964fda5 | 3 weeks ago | 0 B
@@ -30,16 +33,19 @@ Containerize Sitefinity applications on Windows Server 2016 using [Docker](https
 	FROM windowsservercore:latest
 	```
 4. Build the Sitefinity container image by running the Docker build command
+
 	```cmd
 	docker build -t <imageName> <localPathToClonedRepo>
 	```
 5. Before running the container you may want to make sure that Windows Firewall is not blocking communication over port 80. Use this Powershell command:
+
 	```powershell
 	if (!(Get-NetFirewallRule | where {$_.Name -eq "TCP80"})) {
 	    New-NetFirewallRule -Name "TCP80" -DisplayName "HTTP on TCP/80" -protocol tcp -LocalPort 80 -Action Allow -Enabled True
 	}
 	```
-6. Run the container using the Docker run command
+6. Run the container using the Docker run command:
+
 	```cmd
 	docker run --name <containerName> -it -p 80:80 <imageName> cmd
 	```
