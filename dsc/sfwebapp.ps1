@@ -12,6 +12,7 @@ Configuration SitefinityWebApp
             RebootNodeIfNeeded = $false
         }
         
+        #Install neccessary Windows features        
         foreach ($feature in $Node.WindowsFeatures)
         {
             WindowsFeature $feature
@@ -21,12 +22,14 @@ Configuration SitefinityWebApp
             }
         }
 
+        #Download a package of the Sitefinity website
         xRemoteFile "SitefinityWebApp"
         {
             Uri = $Node.SitefinityWebAppSource
             DestinationPath = "$env:SystemDrive\SitefinityWebApp.zip"
         }
 
+        #Extract the package to where the site will be ran from
         Archive "SitefinityWebApp"
         {
             Ensure = "Present"
@@ -38,6 +41,7 @@ Configuration SitefinityWebApp
             DependsOn = "[xRemoteFile]SitefinityWebApp"            
         }
 
+        #Provide application pool idenity with read permissions over site root
         cNtfsPermissionEntry RootFolderPermissions
         {
             Ensure = "Present"
@@ -55,6 +59,7 @@ Configuration SitefinityWebApp
             )
         }
 
+        #Provide application pool identity with write permissions over App_Data folder
         cNtfsPermissionEntry AppDataFolderPermissions
         {
             Ensure = "Present"
@@ -72,7 +77,7 @@ Configuration SitefinityWebApp
             )
         }
 
-
+        #Remove default website
         xWebsite DefaultSite
         {
             Ensure = "Absent"
@@ -80,7 +85,8 @@ Configuration SitefinityWebApp
             PhysicalPath = "C:\inetpub\wwwroot" 
         }
 
-        #for some reason the script resource doesnot work well with configuration data. Must be researched further
+        #Create application pool using Script resource
+        #For some reason the script resource doesnot work well with configuration data. Must be researched further
         Script CreateAppPool
         {
             SetScript = {
@@ -102,6 +108,7 @@ Configuration SitefinityWebApp
             }
         }
 
+        #Add the Sitefinity website to IIS on port 80.
         xWebsite SitefinityWebApp
         {
             Name = $Node.SitefinityWebAppSiteName
